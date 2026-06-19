@@ -30,7 +30,7 @@ export default function AIPanel() {
     }
   };
 
-  // Handle API submission to your Node backend
+  // Handle API submission to your backend architecture
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) {
@@ -39,28 +39,30 @@ export default function AIPanel() {
     }
 
     const formData = new FormData();
-    formData.append("file", file); // 'file' matches your backend configuration keys exactly
+    formData.append("file", file); // Matches backend Multer upload key definition
 
     setLoading(true);
     setError("");
     
-    // 2. Clear previous data structures before processing the request
+    // 2. Reset visual state slots before parsing network payloads
     setSummary("");
     setPros([]);
     setCons([]);
 
     try {
-      // Update port 5000 to your Node port if your frontend connects elsewhere
+      // Dynamic fallback configuration pointing to your live production Render engine
+      const backendUrl = import.meta.env.VITE_API_URL || "https://aspira-backend.onrender.com";
+      
       const response = await axios.post(
-        "http://localhost:5000/api/ai/summarize",
+        `${backendUrl}/api/ai/summarize`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
-          withCredentials: true, // Include if your platform manages user sessions/cookies
+          withCredentials: true, // Manages cookie/session lifecycles cleanly
         },
       );
 
-      // 3. Store extracted payloads on successful execution
+      // 3. Populate matching UI arrays on successful network execution
       if (response.data.success) {
         setSummary(response.data.summary);
         setPros(response.data.pros || []);
