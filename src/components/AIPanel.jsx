@@ -11,6 +11,7 @@ export default function AIPanel() {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [summaryBullets, setSummaryBullets] = useState([]);
+  const [atsScore, setAtsScore] = useState(null);
   const [error, setError] = useState("");
   const [pros, setPros] = useState([]);
   const [cons, setCons] = useState([]);
@@ -39,6 +40,7 @@ export default function AIPanel() {
     setLoading(true);
     setError("");
     setSummaryBullets([]);
+    setAtsScore(null);
     setPros([]);
     setCons([]);
 
@@ -56,6 +58,7 @@ export default function AIPanel() {
 
       if (response.data.success) {
         setSummaryBullets(response.data.summary_bullets || []);
+        setAtsScore(response.data.ats_score);
         setPros(response.data.pros || []);
         setCons(response.data.cons || []);
       }
@@ -69,6 +72,18 @@ export default function AIPanel() {
       setLoading(false);
     }
   };
+
+  // Helper utility to dynamically determine score color thresholds
+  const getScoreColor = (score) => {
+    if (score >= 80) return "#10b981"; // Vibrant Green
+    if (score >= 55) return "#f59e0b"; // Clean Amber Orange
+    return "#ef4444"; // Warning Red
+  };
+
+  // SVG Radial Ring Metric Calculations
+  const radius = 35;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = atsScore ? circumference - (atsScore / 100) * circumference : circumference;
 
   return (
     <div style={styles.container}>
@@ -134,20 +149,45 @@ export default function AIPanel() {
         </div>
       )}
 
-      {/* AI Output Response Terminal Card Section */}
-      {summaryBullets.length > 0 && (
-        <div style={styles.resultCard}>
-          <div style={styles.resultHeader}>
-            <CheckCircle2 size={20} color="#10b981" style={{ marginRight: 8 }} />
-            <h3 style={styles.resultTitle}>Executive Summary Results</h3>
+      {/* 💻 GAUGED VISUAL HEADER LAYER */}
+      {atsScore !== null && (
+        <div style={{ ...styles.resultCard, display: "flex", alignItems: "center", gap: "24px" }}>
+          {/* SVG Radial Progress Circle Component */}
+          <div style={{ position: "relative", width: "90px", height: "90px", flexShrink: 0 }}>
+            <svg width="90" height="90" viewBox="0 0 90 90" style={{ transform: "rotate(-90deg)" }}>
+              <circle cx="45" cy="45" r={radius} fill="transparent" stroke="#e2e8f0" strokeWidth="8" />
+              <circle
+                cx="45"
+                cy="45"
+                r={radius}
+                fill="transparent"
+                stroke={getScoreColor(atsScore)}
+                strokeWidth="8"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                style={{ transition: "stroke-dashoffset 1s ease-in-out" }}
+              />
+            </svg>
+            <div style={{ position: "absolute", top: 0, left: 0, width: "90px", height: "90px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: "18px", fontWeight: "800", color: "#1e293b" }}>{atsScore}</span>
+              <span style={{ fontSize: "10px", color: "#64748b", fontWeight: "600", marginTop: "-2px" }}>ATS</span>
+            </div>
           </div>
-          <ul style={{ margin: 0, paddingLeft: "20px", color: "#14532d", fontSize: "14px", lineHeight: "1.7" }}>
-            {summaryBullets.map((bullet, idx) => (
-              <li key={idx} style={{ marginBottom: "6px" }}>
-                {bullet.endsWith('.') ? bullet : `${bullet}.`}
-              </li>
-            ))}
-          </ul>
+
+          <div style={{ flexGrow: 1 }}>
+            <div style={styles.resultHeader}>
+              <CheckCircle2 size={18} color="#10b981" style={{ marginRight: 6 }} />
+              <h3 style={styles.resultTitle}>Executive AI Assessment</h3>
+            </div>
+            <ul style={{ margin: 0, paddingLeft: "16px", color: "#14532d", fontSize: "13px", lineHeight: "1.6" }}>
+              {summaryBullets.map((bullet, idx) => (
+                <li key={idx} style={{ marginBottom: "4px" }}>
+                  {bullet.endsWith('.') ? bullet : `${bullet}.`}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
 
@@ -189,8 +229,8 @@ const styles = {
   button: { display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "12px", border: "none", borderRadius: "6px", color: "#ffffff", fontSize: "15px", fontWeight: "600", cursor: "pointer", transition: "background-color 0.2s" },
   errorBanner: { display: "flex", alignItems: "center", marginTop: "16px", padding: "12px", backgroundColor: "#fef2f2", border: "1px solid #fca5a5", borderRadius: "6px", color: "#991b1b", fontSize: "14px" },
   resultCard: { marginTop: "24px", padding: "20px", backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "8px" },
-  resultHeader: { display: "flex", alignItems: "center", marginBottom: "12px", borderBottom: "1px solid #dcfce7", paddingBottom: "8px" },
-  resultTitle: { fontSize: "16px", fontWeight: "700", color: "#166534", margin: 0 },
+  resultHeader: { display: "flex", alignItems: "center", marginBottom: "8px", borderBottom: "1px solid #dcfce7", paddingBottom: "4px" },
+  resultTitle: { fontSize: "15px", fontWeight: "700", color: "#166534", margin: 0 },
   spinner: { animation: "spin 1s linear infinite" },
 };
 
