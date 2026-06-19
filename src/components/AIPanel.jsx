@@ -152,29 +152,38 @@ export default function AIPanel() {
       {/* 💻 GAUGED VISUAL HEADER LAYER */}
       {atsScore !== null && (
         <div style={{ ...styles.resultCard, display: "flex", alignItems: "center", gap: "24px" }}>
-          {/* SVG Radial Progress Circle Component */}
-          <div style={{ position: "relative", width: "90px", height: "90px", flexShrink: 0 }}>
-            <svg width="90" height="90" viewBox="0 0 90 90" style={{ transform: "rotate(-90deg)" }}>
-              <circle cx="45" cy="45" r={radius} fill="transparent" stroke="#e2e8f0" strokeWidth="8" />
+          
+          {/* FIXED CIRCLE PROGRESS CONTAINER */}
+          <div style={{ position: "relative", width: "90px", height: "90px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="90" height="90" style={{ transform: "rotate(-90deg)", width: "90px", height: "90px" }}>
+              <circle 
+                cx="45" 
+                cy="45" 
+                r={radius} 
+                fill="transparent" 
+                stroke="#e2e8f0" 
+                strokeWidth="6" 
+              />
               <circle
                 cx="45"
                 cy="45"
                 r={radius}
                 fill="transparent"
                 stroke={getScoreColor(atsScore)}
-                strokeWidth="8"
+                strokeWidth="6"
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"
                 style={{ transition: "stroke-dashoffset 1s ease-in-out" }}
               />
             </svg>
-            <div style={{ position: "absolute", top: 0, left: 0, width: "90px", height: "90px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: "18px", fontWeight: "800", color: "#1e293b" }}>{atsScore}</span>
-              <span style={{ fontSize: "10px", color: "#64748b", fontWeight: "600", marginTop: "-2px" }}>ATS</span>
+            <div style={{ position: "absolute", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: "18px", fontWeight: "800", color: "#1e293b", lineHeight: 1 }}>{atsScore}</span>
+              <span style={{ fontSize: "10px", color: "#64748b", fontWeight: "700", marginTop: "2px" }}>ATS</span>
             </div>
           </div>
 
+          {/* Right side Text Area holding our generated arrays */}
           <div style={{ flexGrow: 1 }}>
             <div style={styles.resultHeader}>
               <CheckCircle2 size={18} color="#10b981" style={{ marginRight: 6 }} />
@@ -188,6 +197,7 @@ export default function AIPanel() {
               ))}
             </ul>
           </div>
+
         </div>
       )}
 
