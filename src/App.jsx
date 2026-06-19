@@ -26,6 +26,10 @@ import AdminApplications from "./pages/AdminApplications";
 import MentorRequests from "./pages/MentorRequests";
 import MyConnections from "./pages/MyConnections";
 import Chat from "./pages/Chat";
+
+// 1. IMPORT YOUR NEW RESUME COMPONENT HERE
+import AIPanel from "./components/AIPanel";
+
 function App() {
   return (
     <>
@@ -56,6 +60,16 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* 2. PLACED SECURELY INSIDE PROTECTED SYSTEM SCOPE */}
+          <Route
+            path="/summarize"
+            element={
+              <ProtectedRoute>
+                <AIPanel />
               </ProtectedRoute>
             }
           />

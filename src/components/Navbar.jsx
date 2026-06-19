@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import API from "../services/api";
 import logo from "../assets/logo.jpg";
-import { FaChevronDown, FaComments } from "react-icons/fa";
+import { FaChevronDown, FaComments, FaBell, FaFileAlt } from "react-icons/fa"; // Imported FaFileAlt for resume icon
 import { toast } from "react-toastify";
 import socket from "../services/socket";
-import { FaBell } from "react-icons/fa";
 import { useRef } from "react";
+
 function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,15 +23,15 @@ function Navbar() {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const token = localStorage.getItem("token");
+
   const playNotificationSound = () => {
     const audio = new Audio("/sounds/notification.wav");
-
     audio.volume = 0.6;
-
     audio.play().catch((error) => {
       console.log(error);
     });
   };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (navbarRef.current && !navbarRef.current.contains(event.target)) {
@@ -43,30 +43,29 @@ function Navbar() {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
   const fetchNotifications = async () => {
     try {
       const res = await API.get("/notifications");
-
       setNotifications(res.data);
-
       const unread = res.data.filter((n) => !n.isRead).length;
-
       setNotificationCount(unread);
     } catch (error) {
       console.log(error);
     }
   };
+
   useEffect(() => {
     if (token) {
       fetchProfile();
       fetchNotifications();
     }
   }, [token]);
+
   useEffect(() => {
     if (token) {
       fetchUnreadCount();
@@ -81,11 +80,8 @@ function Navbar() {
     });
     socket.on("newNotification", (notification) => {
       const audio = new Audio("/notification.wav");
-
       audio.play();
-
       toast.info(`${notification.title}`);
-
       fetchNotifications();
     });
     socket.on("conversationUpdated", () => {
@@ -100,33 +96,32 @@ function Navbar() {
       socket.off("newNotification");
     };
   }, [token]);
+
   const fetchProfile = async () => {
     try {
       const res = await API.get("/auth/profile");
-
       setUser(res.data.user);
     } catch (error) {
       console.log(error);
     }
   };
+
   const fetchUnreadCount = async () => {
     try {
       const res = await API.get("/chat/conversations");
-
       const total = res.data.reduce(
         (sum, conversation) => sum + (conversation.unreadCount || 0),
         0,
       );
-
       setUnreadCount(total);
     } catch (error) {
       console.log(error);
     }
   };
+
   const fetchNotificationCount = async () => {
     try {
       const res = await API.get("/notifications");
-
       const unread = res.data.filter((notification) => !notification.isRead);
 
       if (unread.length > notificationCount && notificationCount !== 0) {
@@ -141,7 +136,6 @@ function Navbar() {
 
   const getInitials = () => {
     if (!user?.name) return "U";
-
     return user.name
       .split(" ")
       .map((word) => word[0])
@@ -193,7 +187,6 @@ function Navbar() {
               <h1 className="text-lg md:text-2xl font-bold text-white">
                 Aspira
               </h1>
-
               <p className="hidden md:block text-xs text-gray-400">
                 Connect • Learn • Grow
               </p>
@@ -215,6 +208,7 @@ function Navbar() {
                   setMentorDropdown(!mentorDropdown);
                   setLostFoundDropdown(false);
                   setProfileDropdown(false);
+                  setNotificationOpen(false);
                 }}
                 className="flex items-center gap-2 hover:text-cyan-400"
               >
@@ -225,21 +219,21 @@ function Navbar() {
               {mentorDropdown && (
                 <div
                   className="
-absolute
-top-12
-left-0
-bg-slate-800
-rounded-2xl
-shadow-2xl
-border
-border-slate-700
-w-56
-p-2
-animate-in
-fade-in
-slide-in-from-top-2
-duration-200
-"
+                    absolute
+                    top-12
+                    left-0
+                    bg-slate-800
+                    rounded-2xl
+                    shadow-2xl
+                    border
+                    border-slate-700
+                    w-56
+                    p-2
+                    animate-in
+                    fade-in
+                    slide-in-from-top-2
+                    duration-200
+                  "
                 >
                   <Link
                     to="/mentors"
@@ -286,6 +280,7 @@ duration-200
                 </div>
               )}
             </div>
+
             {user?.role === "admin" && (
               <Link
                 to="/admin-applications"
@@ -298,6 +293,7 @@ duration-200
                 Applications
               </Link>
             )}
+
             <div className="relative">
               <button
                 onClick={() => {
@@ -336,6 +332,17 @@ duration-200
                 </div>
               )}
             </div>
+
+            {/* 🚀 ADDED: Desktop AI Resume Link */}
+            <Link
+              to="/summarize"
+              className={
+                location.pathname === "/summarize" ? activeClass : normalClass
+              }
+            >
+              AI Summarizer
+            </Link>
+
             {!token ? (
               <>
                 <Link
@@ -369,46 +376,23 @@ duration-200
 
                 <Link
                   to="/chat"
-                  className="
-  relative
-  p-3
-  rounded-xl
-  bg-slate-800
-  hover:bg-slate-700
-  transition
-"
+                  className="relative p-3 rounded-xl bg-slate-800 hover:bg-slate-700 transition"
                 >
                   <FaComments
-                    className={`
-  text-xl
-  transition
-  ${location.pathname === "/chat" ? "text-cyan-400 scale-110" : "text-white"}
-`}
+                    className={`text-xl transition ${
+                      location.pathname === "/chat"
+                        ? "text-cyan-400 scale-110"
+                        : "text-white"
+                    }`}
                   />
-
                   {unreadCount > 0 && (
-                    <span
-                      className="
-      absolute
-      -top-2
-      -right-2
-      bg-red-500
-      text-white
-      text-xs
-      min-w-[18px]
-      h-[18px]
-      rounded-full
-      flex
-      items-center
-      justify-center
-      "
-                    >
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs min-w-[18px] h-[18px] rounded-full flex items-center justify-center">
                       {unreadCount}
                     </span>
                   )}
                 </Link>
+
                 <div className="relative">
-                  {" "}
                   <button
                     onClick={async () => {
                       setNotificationOpen(!notificationOpen);
@@ -419,60 +403,52 @@ duration-200
                         console.log(error);
                       }
                     }}
-                    className=" relative p-3 rounded-xl bg-slate-800 hover:bg-slate-700 transition "
+                    className="relative p-3 rounded-xl bg-slate-800 hover:bg-slate-700 transition"
                   >
-                    {" "}
-                    <FaBell className="text-lg" />{" "}
+                    <FaBell className="text-lg" />
                     {notificationCount > 0 && (
-                      <span className=" absolute -top-1 -right-1 bg-red-500 text-white text-xs min-w-[18px] h-[18px] rounded-full flex items-center justify-center ">
-                        {" "}
-                        {notificationCount}{" "}
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs min-w-[18px] h-[18px] rounded-full flex items-center justify-center">
+                        {notificationCount}
                       </span>
-                    )}{" "}
-                  </button>{" "}
+                    )}
+                  </button>
+
                   {notificationOpen && (
-                    <div className=" absolute right-0 mt-3 w-[400px] max-h-[450px] overflow-y-auto bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-50 ">
-                      {" "}
+                    <div className="absolute right-0 mt-3 w-[400px] max-h-[450px] overflow-y-auto bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-50">
                       <div className="p-4 border-b border-slate-700">
-                        {" "}
                         <div className="flex justify-between items-center">
-                          {" "}
-                          <h3 className="font-bold text-lg">
-                            Notifications
-                          </h3>{" "}
+                          <h3 className="font-bold text-lg">Notifications</h3>
                           <button
                             onClick={async () => {
                               await API.put("/notifications/read-all");
                               fetchNotifications();
                             }}
-                            className=" text-cyan-400 text-sm hover:underline "
+                            className="text-cyan-400 text-sm hover:underline"
                           >
-                            {" "}
-                            Mark All Read{" "}
-                          </button>{" "}
-                        </div>{" "}
-                      </div>{" "}
-                      {notifications.length === 0 ? (
-                        <div className="p-6 text-gray-400">
-                          No notifications
+                            Mark All Read
+                          </button>
                         </div>
+                      </div>
+                      {notifications.length === 0 ? (
+                        <div className="p-6 text-gray-400">No notifications</div>
                       ) : (
                         notifications.map((notification) => (
                           <div
                             key={notification._id}
-                            className={` p-4 border-b border-slate-800 ${notification.isRead ? "" : "bg-cyan-500/10"} `}
+                            className={`p-4 border-b border-slate-800 ${
+                              notification.isRead ? "" : "bg-cyan-500/10"
+                            }`}
                           >
-                            {" "}
                             <p className="text-sm text-white leading-relaxed">
-                              {" "}
-                              {notification.text}{" "}
-                            </p>{" "}
+                              {notification.text}
+                            </p>
                           </div>
                         ))
-                      )}{" "}
+                      )}
                     </div>
-                  )}{" "}
+                  )}
                 </div>
+
                 <div className="relative">
                   <button
                     onClick={() => {
@@ -496,38 +472,22 @@ duration-200
 
                     <div>
                       <p className="text-sm font-semibold">{user?.name}</p>
-
                       <p className="text-xs text-green-400 flex items-center gap-1">
                         <span className="w-2 h-2 rounded-full bg-green-400"></span>
                         Online
                       </p>
                     </div>
-
                     <FaChevronDown size={12} />
                   </button>
 
                   {profileDropdown && (
-                    <div
-                      className="
-  absolute
-  right-0
-  top-14
-  w-56
-  bg-slate-900
-  border
-  border-slate-700
-  rounded-2xl
-  shadow-2xl
-  p-2
-"
-                    >
+                    <div className="absolute right-0 top-14 w-56 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-2">
                       <Link
                         to="/profile"
                         className="block px-4 py-2 hover:bg-slate-700 rounded-lg"
                       >
                         My Profile
                       </Link>
-
                       <button
                         onClick={handleLogout}
                         className="w-full text-left px-4 py-2 hover:bg-slate-700 rounded-lg text-red-400"
@@ -546,7 +506,7 @@ duration-200
             onClick={() => setMenuOpen(!menuOpen)}
             className="lg:hidden text-white text-3xl"
           >
-            ☰
+            {menuOpen ? "✕" : "☰"}
           </button>
         </div>
 
@@ -566,10 +526,8 @@ duration-200
                     {getInitials()}
                   </div>
                 )}
-
                 <div>
                   <h3 className="font-semibold">{user?.name}</h3>
-
                   <p className="text-green-400 text-sm">Online</p>
                 </div>
               </div>
@@ -588,12 +546,16 @@ duration-200
                 Lost & Found
               </Link>
 
+              {/* 🚀 ADDED: Mobile AI Resume Link */}
+              <Link to="/summarize" onClick={closeMenu} className="flex items-center gap-2 text-cyan-400">
+                <FaFileAlt /> AI Summarizer
+              </Link>
+
               {!token ? (
                 <>
                   <Link to="/login" onClick={closeMenu}>
                     Login
                   </Link>
-
                   <Link
                     to="/register"
                     onClick={closeMenu}
@@ -607,24 +569,15 @@ duration-200
                   <Link to="/dashboard" onClick={closeMenu}>
                     Dashboard
                   </Link>
-                  <Link
-                    to="/chat"
-                    onClick={closeMenu}
-                    className="flex items-center gap-2"
-                  >
-                    <FaComments />
-                    Chats
+                  <Link to="/chat" onClick={closeMenu} className="flex items-center gap-2">
+                    <FaComments /> Chats
                     {unreadCount > 0 && (
                       <span className="bg-red-500 text-white text-xs px-2 rounded-full">
                         {unreadCount}
                       </span>
                     )}
                   </Link>
-                  <Link
-                    to="/notifications"
-                    onClick={closeMenu}
-                    className="flex items-center gap-2"
-                  >
+                  <Link to="/notifications" onClick={closeMenu} className="flex items-center gap-2">
                     🔔 Notifications
                     {notificationCount > 0 && (
                       <span className="bg-red-500 text-white text-xs px-2 rounded-full">
@@ -635,12 +588,12 @@ duration-200
                   <Link to="/profile" onClick={closeMenu}>
                     Profile
                   </Link>
-
                   <Link to="/my-uploads" onClick={closeMenu}>
                     My Uploads
                   </Link>
                   <Link
                     to="/become-mentor"
+                    onClick={closeMenu}
                     className={
                       location.pathname === "/become-mentor"
                         ? activeClass
@@ -652,7 +605,6 @@ duration-200
                   <Link to="/upload-item" onClick={closeMenu}>
                     Upload Item
                   </Link>
-
                   <button
                     onClick={handleLogout}
                     className="bg-red-500 py-2 rounded-xl"
